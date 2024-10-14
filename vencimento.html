@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Próximo do Vencimento</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .produto {
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .verde {
+            background-color: #d4edda; /* Verde */
+            color: #155724; /* Texto verde escuro */
+        }
+        .amarelo {
+            background-color: #fff3cd; /* Amarelo */
+            color: #856404; /* Texto amarelo escuro */
+        }
+        .vermelho {
+            background-color: #f8d7da; /* Vermelho */
+            color: #721c24; /* Texto vermelho escuro */
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Próximo do Vencimento</h1>
+        <p>Lista de produtos próximos do vencimento.</p>
+        <button onclick="window.location.href='index.html'">Voltar ao Menu</button>
+        <div id="lista-produtos"></div>
+    </div>
+
+    <script>
+        function mostrarProdutosProximosDoVencimento() {
+            const produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+            const hoje = new Date();
+            const listaProdutosContainer = document.getElementById('lista-produtos');
+            listaProdutosContainer.innerHTML = ''; // Limpa a lista
+
+            // Filtrar produtos que estão para vencer nos próximos 30 dias
+            const produtosProximos = produtos.flatMap(produto => 
+                produto.entradas.map(entrada => {
+                    const dataValidade = new Date(entrada.validade);
+                    const diffDias = Math.ceil((dataValidade - hoje) / (1000 * 60 * 60 * 24)); // Diferença em dias
+                    return { ...produto, entrada, diffDias };
+                })
+            ).filter(item => item.diffDias <= 30).sort((a, b) => a.diffDias - b.diffDias);
+
+            // Exibir os produtos
+            produtosProximos.forEach(item => {
+                const divProduto = document.createElement('div');
+                divProduto.classList.add('produto');
+
+                // Define a classe com base no tempo até o vencimento
+                if (item.diffDias > 15) {
+                    divProduto.classList.add('verde');
+                } else if (item.diffDias > 5) {
+                    divProduto.classList.add('amarelo');
+                } else {
+                    divProduto.classList.add('vermelho');
+                }
+
+                divProduto.innerHTML = `
+                    <strong>Produto:</strong> ${item.nome}<br>
+                    <strong>Quantidade:</strong> ${item.entrada.quantidade}<br>
+                    <strong>Data de Entrada:</strong> ${item.entrada.data}<br>
+                    <strong>Data de Validade:</strong> ${item.entrada.validade}<br>
+                    <strong>Faltam:</strong> ${item.diffDias} dias
+                `;
+                listaProdutosContainer.appendChild(divProduto);
+            });
+
+            // Se não houver produtos próximos do vencimento
+            if (produtosProximos.length === 0) {
+                listaProdutosContainer.innerHTML = '<p>Nenhum produto próximo do vencimento.</p>';
+            }
+        }
+
+        // Chama a função ao carregar a página
+        window.onload = mostrarProdutosProximosDoVencimento;
+    </script>
+</body>
+</html>

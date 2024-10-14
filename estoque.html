@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estoque</title>
+    <link rel="stylesheet" href="style2.css">
+</head>
+<body>
+    <h1>Estoque de Produtos</h1>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Digite o nome do produto...">
+        <button onclick="filtrarProdutos()">Pesquisar</button>
+    </div>
+
+    <div id="product-list"></div>
+
+    <button type="button" onclick="window.location.href='index.html'">Voltar ao Menu</button>
+
+    <script>
+        // Função para carregar e exibir os produtos do estoque
+        function carregarProdutos() {
+            const produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = '';
+
+            if (produtos.length === 0) {
+                const mensagem = document.createElement('p');
+                mensagem.textContent = "Nenhum produto no estoque.";
+                productList.appendChild(mensagem);
+            } else {
+                // Ordenar os produtos por data de entrada em ordem crescente
+                produtos.sort((a, b) => {
+                    const dataA = new Date(a.dataEntrada || '1970-01-01');
+                    const dataB = new Date(b.dataEntrada || '1970-01-01');
+                    return dataA - dataB;
+                });
+
+                // Agrupar produtos por nome e coletar detalhes
+                const produtosAgrupados = {};
+
+                produtos.forEach(produto => {
+                    const chave = produto.nome.toLowerCase();
+                    if (!produtosAgrupados[chave]) {
+                        produtosAgrupados[chave] = {
+                            nome: produto.nome,
+                            imagem: produto.imagem,
+                            detalhes: []
+                        };
+                    }
+
+                    // Adicionar detalhes de cada produto sem somar, separando por entrada e saída
+                    produtosAgrupados[chave].detalhes.push({
+                        validade: produto.validade,
+                        dataEntrada: produto.dataEntrada,
+                        dataSaida: produto.dataSaida,
+                        quantidade: produto.quantidade
+                    });
+                });
+
+                const produtosLista = Object.values(produtosAgrupados);
+
+                produtosLista.forEach(produto => {
+                    const divProduto = document.createElement('div');
+                    divProduto.classList.add('produto-item');
+
+                    const img = document.createElement('img');
+                    img.src = produto.imagem || 'imagens/placeholder.png';
+                    img.alt = produto.nome;
+                    img.style.width = '100px';
+                    img.style.height = '100px';
+                    divProduto.appendChild(img);
+
+                    const info = document.createElement('p');
+                    info.textContent = `Nome: ${produto.nome}`;
+                    divProduto.appendChild(info);
+
+                    // Exibir detalhes de entradas e saídas individualmente
+                    produto.detalhes.forEach(detalhe => {
+                        const detalheDiv = document.createElement('div');
+                        detalheDiv.classList.add('detalhe-item');
+
+                        const detalheInfo = document.createElement('p');
+                        detalheInfo.textContent = `Validade: ${detalhe.validade || 'Não informada'}, Entrada: ${detalhe.dataEntrada || 'Não informada'}, Saída: ${detalhe.dataSaida || 'Não informada'}, Quantidade: ${detalhe.quantidade || '0'}`;
+                        detalheDiv.appendChild(detalheInfo);
+
+                        divProduto.appendChild(detalheDiv);
+                    });
+
+                    productList.appendChild(divProduto);
+                });
+            }
+        }
+
+        // Função para filtrar os produtos
+        function filtrarProdutos() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = '';
+
+            const produtosFiltrados = produtos.filter(produto => produto.nome.toLowerCase().includes(searchInput));
+
+            if (produtosFiltrados.length === 0) {
+                const mensagem = document.createElement('p');
+                mensagem.textContent = "Nenhum produto encontrado.";
+                productList.appendChild(mensagem);
+            } else {
+                // Ordenar os produtos filtrados por data de entrada em ordem crescente
+                produtosFiltrados.sort((a, b) => {
+                    const dataA = new Date(a.dataEntrada || '1970-01-01');
+                    const dataB = new Date(b.dataEntrada || '1970-01-01');
+                    return dataA - dataB;
+                });
+
+                const produtosAgrupados = {};
+
+                produtosFiltrados.forEach(produto => {
+                    const chave = produto.nome.toLowerCase();
+                    if (!produtosAgrupados[chave]) {
+                        produtosAgrupados[chave] = {
+                            nome: produto.nome,
+                            imagem: produto.imagem,
+                            detalhes: []
+                        };
+                    }
+
+                    // Adicionar detalhes de cada produto sem somar, separando por entrada e saída
+                    produtosAgrupados[chave].detalhes.push({
+                        validade: produto.validade,
+                        dataEntrada: produto.dataEntrada,
+                        dataSaida: produto.dataSaida,
+                        quantidade: produto.quantidade
+                    });
+                });
+
+                const produtosLista = Object.values(produtosAgrupados);
+
+                produtosLista.forEach(produto => {
+                    const divProduto = document.createElement('div');
+                    divProduto.classList.add('produto-item');
+
+                    const img = document.createElement('img');
+                    img.src = produto.imagem || 'imagens/placeholder.png';
+                    img.alt = produto.nome;
+                    img.style.width = '100px';
+                    img.style.height = '100px';
+                    divProduto.appendChild(img);
+
+                    const info = document.createElement('p');
+                    info.textContent = `Nome: ${produto.nome}`;
+                    divProduto.appendChild(info);
+
+                    // Exibir detalhes de entradas e saídas individualmente
+                    produto.detalhes.forEach(detalhe => {
+                        const detalheDiv = document.createElement('div');
+                        detalheDiv.classList.add('detalhe-item');
+
+                        const detalheInfo = document.createElement('p');
+                        detalheInfo.textContent = `Validade: ${detalhe.validade || 'Não informada'}, Entrada: ${detalhe.dataEntrada || 'Não informada'}, Saída: ${detalhe.dataSaida || 'Não informada'}, Quantidade: ${detalhe.quantidade || '0'}`;
+                        detalheDiv.appendChild(detalheInfo);
+
+                        divProduto.appendChild(detalheDiv);
+                    });
+
+                    productList.appendChild(divProduto);
+                });
+            }
+        }
+
+        window.onload = carregarProdutos;
+    </script>
+</body>
+</html>
